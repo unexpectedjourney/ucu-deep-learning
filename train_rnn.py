@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from trainer import BasicTrainer
+from trainer import BasicTrainer, AlarmworkTrainer
 from models import (SimpleRNNFromBox, AlarmworkRNN, LSTMModel)
 
 
@@ -14,14 +14,18 @@ BATCH_SIZE = 20
 print('Welcome to the real world!')
 
 # model = SimpleRNNFromBox(NUM_INPUTS, NUM_HIDDEN, NUM_OUTPUTS)
-# model = AlarmworkRNN(NUM_INPUTS, NUM_HIDDEN, NUM_OUTPUTS)
-model = LSTMModel(NUM_INPUTS, NUM_HIDDEN, NUM_OUTPUTS)
+model = AlarmworkRNN(NUM_INPUTS, NUM_HIDDEN, NUM_OUTPUTS)
+# model = LSTMModel(NUM_INPUTS, NUM_HIDDEN, NUM_OUTPUTS)
 print(type(model).__name__)
 
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
 trainer = BasicTrainer(
+        SEQ_LEN, NUM_INPUTS, NUM_HIDDEN, NUM_OUTPUTS, BATCH_SIZE, model, 
+        loss_fn, optimizer
+)
+trainer = AlarmworkTrainer(
         SEQ_LEN, NUM_INPUTS, NUM_HIDDEN, NUM_OUTPUTS, BATCH_SIZE, model, 
         loss_fn, optimizer
 )

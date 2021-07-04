@@ -24,42 +24,45 @@ class SimpleRNNFromBox(nn.Module):
 
 class Layer1(nn.Module):
     def __init__(self, num_inputs, num_outputs):
-        self.W_in = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_outputs, num_inputs)))
-        self.b_in = nn.Parameter(torch.zeros(num_outputs), 1)
+        super(Layer1, self).__init__()
+        self.W_in = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_inputs, num_outputs)))
+        self.b_in = nn.Parameter(torch.zeros(num_outputs,))
         self.W_rec = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_outputs, num_outputs)))
         self.tanh = nn.Tanh()
 
     def forward(self, x, x_layer1, x_layer2):
         z12 = x_layer1 + x_layer2
-        a = self.W_in @ x + self.W_rec @ z12 + self.b_in
+        a = x @ self.W_in + z12 @ self.W_rec + self.b_in
         z = self.tanh(a)
         return z
 
 
 class Layer2(nn.Module):
     def __init__(self, num_inputs, num_outputs):
+        super(Layer2, self).__init__()
         self.identity = nn.Identity()
-        self.W_in = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_outputs, num_inputs)))
-        self.b_in = nn.Parameter(torch.zeros(num_outputs), 1)
+        self.W_in = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_inputs, num_outputs)))
+        self.b_in = nn.Parameter(torch.zeros(num_outputs,))
         self.W_rec = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_outputs, num_outputs)))
         self.tanh = nn.Tanh()
 
     def forward(self, x, x_prev, step):
         if step % 2 == 0:
-            return self.identity(x)
-        a = self.W_in @ x + self.W_rec @ x_prev + self.b_in
+            return self.identity(x_prev)
+        a = x @ self.W_in + x_prev @ self.W_rec + self.b_in
         z = self.tanh(a)
         return z
 
 
 class LayerOut(nn.Module):
     def __init__(self, num_inputs, num_outputs):
-        self.W_out = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_outputs, num_outputs)))
-        self.b_out = nn.Parameter(torch.zeros(num_outputs), 1)
+        super(LayerOut, self).__init__()
+        self.W_out = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_inputs, num_outputs)))
+        self.b_out = nn.Parameter(torch.zeros(num_outputs,))
         self.tanh = nn.Tanh()
 
     def forward(self, x):
-        a = self.W_out @ x + self.b_out
+        a = x @ self.W_out + self.b_out
         z = self.tanh(a)
         return z
 
@@ -75,6 +78,7 @@ class AlarmworkRNN(nn.Module):
         z_layer1 = self.layer1(x, x_layer1, x_layer2)
         z_layer2 = self.layer2(x, x_layer2, step)
         z_out = self.layer_out(z_layer1)
+        z_out = z_out[:, -1, :]
         return z_out, z_layer1, z_layer2
 
 
@@ -89,5 +93,4 @@ class LSTMModel(nn.Module):
         x = x[:, -1, :]
         x = self.linear(x)
         return x
-
 
