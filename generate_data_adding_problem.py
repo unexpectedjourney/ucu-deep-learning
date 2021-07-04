@@ -58,5 +58,6 @@ def main(seq_len=10):
         seq_len=seq_len
     )
 
+
 if __name__ == "__main__":
     fire.Fire(main)
