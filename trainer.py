@@ -59,15 +59,10 @@ class BasicTrainer:
 
 class AlarmworkTrainer(BasicTrainer):
     def train(self):
-        layer1_state = torch.zeros((self.batch_size, self.seq_len, self.num_hidden))
-        layer2_state = torch.zeros((self.batch_size, self.seq_len, self.num_hidden))
         for e in range(50):
             self.model.eval()
-            empty_layer1_state = torch.zeros((self.X_dev.shape[0], self.seq_len, self.num_hidden))
-            empty_layer2_state = torch.zeros((self.X_dev.shape[0], self.seq_len, self.num_hidden))
-            results, _, _ = self.model(
-                    self.X_dev, empty_layer1_state, empty_layer2_state, 0
-            )
+            # print("X_dev", self.X_dev.shape)
+            results = self.model(self.X_dev)
             dev_acc = adding_problem_evaluate(results, self.T_dev)
             print(f'T = {self.seq_len}, epoch = {e}, DEV accuracy = {dev_acc}%%')
             if dev_acc > 99.5:
@@ -77,14 +72,7 @@ class AlarmworkTrainer(BasicTrainer):
             for step, (X_batch, T_batch) in enumerate(get_batches(
                     self.X_train, self.T_train, batch_size=self.batch_size
             )):
-                Y_batch, layer1_state, layer2_state = self.model(
-                        X_batch, layer1_state, layer2_state, step,
-                )
-
-                layer1_state.detach_()
-                layer2_state.detach_()
-                layer1_state = layer1_state.detach()
-                layer2_state = layer2_state.detach()
+                Y_batch = self.model(X_batch)
 
                 loss = self.loss_fn(Y_batch, T_batch)
                 self.optimizer.zero_grad()
@@ -92,11 +80,7 @@ class AlarmworkTrainer(BasicTrainer):
                 self.optimizer.step()
 
     def eval(self):
-        empty_layer1_state = torch.zeros((self.X_test.shape[0], self.seq_len, self.num_hidden))
-        empty_layer2_state = torch.zeros((self.X_test.shape[0], self.seq_len, self.num_hidden))
-        results, _, _ = self.model(
-                self.X_test, empty_layer1_state, empty_layer2_state, 0
-        )
+        results = self.model(self.X_test)
  
         test_acc = adding_problem_evaluate(results, self.T_test)
         print(f'\nTEST accuracy = {test_acc}')

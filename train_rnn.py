@@ -22,7 +22,9 @@ def main(
     trainer = None
 
     if model_name == "alarmrnn":
-        model = AlarmworkRNN(num_inputs, num_hidden, num_outputs)   
+        model = AlarmworkRNN(
+                num_inputs, num_hidden, num_outputs, batch_size, seq_len
+        )   
     elif model_name == "lstm":
         model = LSTMModel(num_inputs, num_hidden, num_outputs)
     elif model_name == "srnn":

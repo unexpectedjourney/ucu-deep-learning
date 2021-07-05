@@ -67,7 +67,7 @@ class Layer2(nn.Module):
         self.tanh = nn.Tanh()
 
     def forward(self, x, x_prev, step):
-        if step % 2 == 0:
+        if step % 2 == 1:
             return self.identity(x_prev)
         a = x @ self.W_in + x_prev @ self.W_rec + self.b_in
         z = self.tanh(a)
@@ -88,16 +88,28 @@ class LayerOut(nn.Module):
 
 
 class AlarmworkRNN(nn.Module):
-    def __init__(self, num_inputs, num_hidden, num_outputs):
+    def __init__(self, num_inputs, num_hidden, num_outputs, batch_size, seq_len):
         super(AlarmworkRNN, self).__init__()
+        self.num_inputs = num_inputs
+        self.num_hidden = num_hidden
+        self.num_outputs = num_outputs
+        self.batch_size = batch_size
+        self.seq_len = seq_len
         self.layer1 = Layer1(num_inputs, num_hidden)
         self.layer2 = Layer2(num_inputs, num_hidden)
         self.layer_out = LayerOut(num_hidden, num_outputs)
 
-    def forward(self, x, x_layer1, x_layer2, step):
-        z_layer1 = self.layer1(x, x_layer1, x_layer2)
-        z_layer2 = self.layer2(x, x_layer2, step)
-        z_out = self.layer_out(z_layer1)
-        z_out = z_out[:, -1, :]
-        return z_out, z_layer1, z_layer2
+    def forward(self, x):
+        num_data, max_seq_len, _ = x.shape
+        z_layer1 = torch.zeros((max_seq_len, self.num_hidden))
+        z_layer2 = torch.zeros((max_seq_len, self.num_hidden))
+        out = []
+        for step, x_seq in enumerate(x):
+            z_layer1 = self.layer1(x_seq, z_layer1, z_layer2)
+            z_layer2 = self.layer2(x_seq, z_layer2, step)
+            z_out = self.layer_out(z_layer1)
+            z_out = z_out[-1, :]
+            out.append(z_out)
+        out = torch.stack(out)
+        return out 
 
