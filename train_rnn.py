@@ -6,6 +6,8 @@ from trainer import BasicTrainer, AlarmworkTrainer
 from models import (SimpleRNNFromBox, AlarmworkRNN, LSTMModel)
 
 
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 print('Welcome to the real world!')
 
 
@@ -17,14 +19,14 @@ def main(
     batch_size=20,
     model_name="alarmrnn"
 ):
-    loss_fn = nn.MSELoss()
+    loss_fn = nn.MSELoss().to(DEVICE)
     model = None
     trainer = None
 
     if model_name == "alarmrnn":
         model = AlarmworkRNN(
                 num_inputs, num_hidden, num_outputs, batch_size, seq_len
-        )   
+        )
     elif model_name == "lstm":
         model = LSTMModel(num_inputs, num_hidden, num_outputs)
     elif model_name == "srnn":
@@ -34,6 +36,7 @@ def main(
         return
     print(type(model).__name__)
 
+    model = model.to(DEVICE)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     if model_name == "alarmrnn":
         trainer = AlarmworkTrainer(

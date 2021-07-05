@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 class SimpleRNNFromBox(nn.Module):
     def __init__(self, num_inputs, num_hidden, num_outputs):
@@ -15,7 +17,7 @@ class SimpleRNNFromBox(nn.Module):
 
     def forward(self, X):
         num_data, max_seq_len, _ = X.shape
-        h0 = torch.zeros(1, num_data, self.num_hidden)
+        h0 = torch.zeros(1, num_data, self.num_hidden).to(DEVICE)
         output, hn = self.rnn(X, h0) # output.shape: num_data x seq_len x num_hidden
         last_output = output[:, -1, :] # num_data x num_hidden
         Y = self.out_layer(last_output) # num_data x num_outputs
@@ -34,8 +36,8 @@ class LSTMModel(nn.Module):
 
     def forward(self, x):
         num_data, max_seq_len, _ = x.shape
-        h0 = torch.zeros(1, num_data, self.num_hidden)
-        c0 = torch.zeros(1, num_data, self.num_hidden)
+        h0 = torch.zeros(1, num_data, self.num_hidden).to(DEVICE)
+        c0 = torch.zeros(1, num_data, self.num_hidden).to(DEVICE)
         output, _ = self.lstm(x, (h0, c0))
         output = output[:, -1, :]
         output = self.linear(output)
@@ -67,7 +69,7 @@ class Layer2(nn.Module):
         self.tanh = nn.Tanh()
 
     def forward(self, x, x_prev, step):
-        if step % 2 == 1:
+        if step % 2 == 0:
             return self.identity(x_prev)
         a = x @ self.W_in + x_prev @ self.W_rec + self.b_in
         z = self.tanh(a)
@@ -101,15 +103,12 @@ class AlarmworkRNN(nn.Module):
 
     def forward(self, x):
         num_data, max_seq_len, _ = x.shape
-        z_layer1 = torch.zeros((max_seq_len, self.num_hidden))
-        z_layer2 = torch.zeros((max_seq_len, self.num_hidden))
-        out = []
-        for step, x_seq in enumerate(x):
-            z_layer1 = self.layer1(x_seq, z_layer1, z_layer2)
-            z_layer2 = self.layer2(x_seq, z_layer2, step)
+        z_layer1 = torch.zeros((num_data, self.num_hidden)).to(DEVICE)
+        z_layer2 = torch.zeros((num_data, self.num_hidden)).to(DEVICE)
+        for step in range(max_seq_len):
+            element = x[:, step, :]
+            z_layer1 = self.layer1(element, z_layer1, z_layer2)
+            z_layer2 = self.layer2(element, z_layer2, step)
             z_out = self.layer_out(z_layer1)
-            z_out = z_out[-1, :]
-            out.append(z_out)
-        out = torch.stack(out)
-        return out 
+        return z_out
 

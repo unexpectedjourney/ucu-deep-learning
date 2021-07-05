@@ -3,6 +3,9 @@ import pathlib
 import torch
 
 
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
 def read_data_adding_problem(csv_filename):
     lines = pathlib.Path(csv_filename).read_text().splitlines()
     values, markers, adding_results = [], [], []
@@ -34,7 +37,7 @@ def read_data_adding_problem_torch(csv_filename):
         for n, (v, m) in enumerate(zip(curr_values, curr_markers)):
             X[k, n, 0] = v
             X[k, n, 1] = m
-    return X, T
+    return X.to(DEVICE), T.to(DEVICE)
 
 
 def get_batches(X, T, batch_size):
