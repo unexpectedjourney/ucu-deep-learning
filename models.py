@@ -22,6 +22,26 @@ class SimpleRNNFromBox(nn.Module):
         return Y
 
 
+class LSTMModel(nn.Module):
+    def __init__(self, num_inputs, num_hidden, num_outputs):
+        super(LSTMModel, self).__init__()
+        self.num_inputs = num_inputs
+        self.num_hidden = num_hidden
+        self.num_outputs = num_outputs
+        self.lstm = nn.LSTM(input_size=num_inputs, hidden_size=num_hidden,
+                            num_layers=1, batch_first=True, bidirectional=False)
+        self.linear = nn.Linear(num_hidden, num_outputs)
+
+    def forward(self, x):
+        num_data, max_seq_len, _ = x.shape
+        h0 = torch.zeros(1, num_data, self.num_hidden)
+        c0 = torch.zeros(1, num_data, self.num_hidden)
+        output, _ = self.lstm(x, (h0, c0))
+        output = output[:, -1, :]
+        output = self.linear(output)
+        return output
+
+
 class Layer1(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Layer1, self).__init__()
@@ -80,17 +100,4 @@ class AlarmworkRNN(nn.Module):
         z_out = self.layer_out(z_layer1)
         z_out = z_out[:, -1, :]
         return z_out, z_layer1, z_layer2
-
-
-class LSTMModel(nn.Module):
-    def __init__(self, num_inputs, num_hidden, num_outputs):
-        super(LSTMModel, self).__init__()
-        self.lstm = nn.LSTM(num_inputs, num_hidden)
-        self.linear = nn.Linear(num_hidden, num_outputs)
-
-    def forward(self, x):
-        x, _ = self.lstm(x)
-        x = x[:, -1, :]
-        x = self.linear(x)
-        return x
 
