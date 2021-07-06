@@ -34,7 +34,7 @@ class BasicTrainer:
         )
 
     def train(self):
-        for e in range(50):
+        for e in range(1, 51):
             self.model.eval()
             dev_acc = adding_problem_evaluate(self.model(self.X_dev), self.T_dev)
             print(f'T = {self.seq_len}, epoch = {e}, DEV accuracy = {dev_acc}%%')
@@ -49,7 +49,7 @@ class BasicTrainer:
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-        return dev_acc
+        return dev_acc, e
 
     def eval(self):
         test_acc = adding_problem_evaluate(self.model(self.X_test), self.T_test)

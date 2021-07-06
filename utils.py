@@ -68,3 +68,4 @@ def xavier_uniform(matrix):
     bound = math.sqrt(6) / math.sqrt(n_in + n_out)
     result = matrix.uniform_(-bound, bound)
     return result
+
