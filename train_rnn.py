@@ -2,7 +2,7 @@ import fire
 import torch
 from torch import nn
 
-from trainer import BasicTrainer, AlarmworkTrainer
+from trainer import BasicTrainer
 from models import (SimpleRNNFromBox, AlarmworkRNN, LSTMModel)
 
 
@@ -39,16 +39,11 @@ def main(
 
     model = model.to(DEVICE)
     optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
-    if model_name == "alarmrnn":
-        trainer = AlarmworkTrainer(
-            seq_len, num_inputs, num_hidden, num_outputs, batch_size, model,
-            loss_fn, optimizer
-        )
-    else:
-        trainer = BasicTrainer(
-            seq_len, num_inputs, num_hidden, num_outputs, batch_size, model,
-            loss_fn, optimizer
-        )
+
+    trainer = BasicTrainer(
+        seq_len, num_inputs, num_hidden, num_outputs, batch_size, model,
+        loss_fn, optimizer
+    )
     trainer.train()
     trainer.eval()
 

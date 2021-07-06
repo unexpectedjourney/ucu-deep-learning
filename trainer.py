@@ -1,5 +1,3 @@
-import torch
-
 from utils import (
         read_data_adding_problem_torch, adding_problem_evaluate, get_batches)
 
@@ -55,34 +53,4 @@ class BasicTrainer:
     def eval(self):
         test_acc = adding_problem_evaluate(self.model(self.X_test), self.T_test)
         print(f'\nTEST accuracy = {test_acc}')
-
-
-class AlarmworkTrainer(BasicTrainer):
-    def train(self):
-        for e in range(50):
-            self.model.eval()
-            # print("X_dev", self.X_dev.shape)
-            results = self.model(self.X_dev)
-            dev_acc = adding_problem_evaluate(results, self.T_dev)
-            print(f'T = {self.seq_len}, epoch = {e}, DEV accuracy = {dev_acc}%%')
-            if dev_acc > 99.5:
-                break
-            self.model.train()
-
-            for step, (X_batch, T_batch) in enumerate(get_batches(
-                    self.X_train, self.T_train, batch_size=self.batch_size
-            )):
-                Y_batch = self.model(X_batch)
-
-                loss = self.loss_fn(Y_batch, T_batch)
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-
-    def eval(self):
-        results = self.model(self.X_test)
- 
-        test_acc = adding_problem_evaluate(results, self.T_test)
-        print(f'\nTEST accuracy = {test_acc}')
-
 
