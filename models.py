@@ -91,8 +91,23 @@ class LayerOut(nn.Module):
         return z
 
 
+class LayerOutScalar(LayerOut):
+    def forward(self, x):
+        a = torch.zeros(x.size(0), 1).to(DEVICE)
+        for i in range(x.size(0)):
+            for j in range(self.W_out.size(1)):
+                for k in range(self.W_out.size(0)):
+                    a[i, j] += x[i, k] * self.W_out[k, j]
+                a[i, j] += self.b_out[j]
+        z = self.tanh(a)
+        return z
+
+
 class AlarmworkRNN(nn.Module):
-    def __init__(self, num_inputs, num_hidden, num_outputs, batch_size, seq_len):
+    def __init__(
+            self, num_inputs, num_hidden, num_outputs, batch_size, seq_len,
+            scalar=False
+    ):
         super(AlarmworkRNN, self).__init__()
         self.num_inputs = num_inputs
         self.num_hidden = num_hidden
@@ -101,7 +116,11 @@ class AlarmworkRNN(nn.Module):
         self.seq_len = seq_len
         self.layer1 = Layer1(num_inputs, num_hidden)
         self.layer2 = Layer2(num_inputs, num_hidden)
-        self.layer_out = LayerOut(num_hidden, num_outputs)
+        self.layer_out = None
+        if scalar:
+            self.layer_out = LayerOutScalar(num_hidden, num_outputs)
+        else:
+            self.layer_out = LayerOut(num_hidden, num_outputs)
 
     def forward(self, x):
         num_data, max_seq_len, _ = x.shape

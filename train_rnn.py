@@ -17,7 +17,8 @@ def main(
     num_hidden=50,
     num_outputs=1,
     batch_size=20,
-    model_name="alarmrnn"
+    model_name="alarmrnn",
+    scalar=False,
 ):
     loss_fn = nn.MSELoss().to(DEVICE)
     model = None
@@ -25,7 +26,7 @@ def main(
 
     if model_name == "alarmrnn":
         model = AlarmworkRNN(
-                num_inputs, num_hidden, num_outputs, batch_size, seq_len
+            num_inputs, num_hidden, num_outputs, batch_size, seq_len, scalar
         )
     elif model_name == "lstm":
         model = LSTMModel(num_inputs, num_hidden, num_outputs)
