@@ -1,3 +1,5 @@
+import time
+
 import fire
 import torch
 from torch import nn
@@ -19,6 +21,7 @@ def main(
     batch_size=20,
     model_name="alarmrnn",
     scalar=False,
+    clock_in=False
 ):
     loss_fn = nn.MSELoss().to(DEVICE)
     model = None
@@ -44,8 +47,15 @@ def main(
         seq_len, num_inputs, num_hidden, num_outputs, batch_size, model,
         loss_fn, optimizer
     )
-    trainer.train()
-    trainer.eval()
+    if clock_in:
+        start_at = time.time()
+
+    dev_acc = trainer.train()
+    test_acc = trainer.eval()
+    
+    if clock_in:
+        end_at = time.time()
+        print(f"Time used for {model_name} with seq_len={seq_len}: {end_at - start_at}")
 
 
 if __name__ == "__main__":

@@ -49,8 +49,10 @@ class BasicTrainer:
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
+        return dev_acc
 
     def eval(self):
         test_acc = adding_problem_evaluate(self.model(self.X_test), self.T_test)
         print(f'\nTEST accuracy = {test_acc}')
+        return test_acc
 
