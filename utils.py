@@ -1,3 +1,4 @@
+import math
 import pathlib
 
 import torch
@@ -59,3 +60,11 @@ def adding_problem_evaluate(outputs, gt_outputs):
     acc = num_correct*100 / len(outputs)
     return acc
 
+
+def xavier_uniform(matrix):
+    n_in = matrix.size(0)
+    n_out = matrix.size(1)
+
+    bound = math.sqrt(6) / math.sqrt(n_in + n_out)
+    result = matrix.uniform_(-bound, bound)
+    return result

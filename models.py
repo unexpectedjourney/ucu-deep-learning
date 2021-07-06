@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+from utils import xavier_uniform
+
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -47,9 +49,9 @@ class LSTMModel(nn.Module):
 class Layer1(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Layer1, self).__init__()
-        self.W_in = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_inputs, num_outputs)))
+        self.W_in = nn.Parameter(xavier_uniform(torch.empty(num_inputs, num_outputs)))
         self.b_in = nn.Parameter(torch.zeros(num_outputs,))
-        self.W_rec = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_outputs, num_outputs)))
+        self.W_rec = nn.Parameter(xavier_uniform(torch.empty(num_outputs, num_outputs)))
         self.tanh = nn.Tanh()
 
     def forward(self, x, x_layer1, x_layer2):
@@ -63,9 +65,9 @@ class Layer2(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(Layer2, self).__init__()
         self.identity = nn.Identity()
-        self.W_in = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_inputs, num_outputs)))
+        self.W_in = nn.Parameter(xavier_uniform(torch.empty(num_inputs, num_outputs)))
         self.b_in = nn.Parameter(torch.zeros(num_outputs,))
-        self.W_rec = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_outputs, num_outputs)))
+        self.W_rec = nn.Parameter(xavier_uniform(torch.empty(num_outputs, num_outputs)))
         self.tanh = nn.Tanh()
 
     def forward(self, x, x_prev, step):
@@ -79,7 +81,7 @@ class Layer2(nn.Module):
 class LayerOut(nn.Module):
     def __init__(self, num_inputs, num_outputs):
         super(LayerOut, self).__init__()
-        self.W_out = nn.Parameter(nn.init.xavier_uniform_(torch.empty(num_inputs, num_outputs)))
+        self.W_out = nn.Parameter(xavier_uniform(torch.empty(num_inputs, num_outputs)))
         self.b_out = nn.Parameter(torch.zeros(num_outputs,))
         self.tanh = nn.Tanh()
 
